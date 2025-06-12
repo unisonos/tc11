@@ -34,8 +34,8 @@ def simulador_matricula():
 
     num_estudiantes = 40
 
-    Locks = [lock() for _ in range(num_cursos)]
-
+    Locks = [Lock() for _ in range(num_cursos)]
+    
     procesos_estudiantes = []
     for estudiante in range(0, num_estudiantes):
         procesos_estudiantes.append(
@@ -69,7 +69,7 @@ def matricular(estudiante, num_cursos, cupos, matriculados, en_espera, locks):
 
     cursos_a_matricular = list(range(num_cursos))
     for curso in cursos_a_matricular:
-        with locks:
+        with locks[curso]:
             # print(f'Estudiante carnet {estudiante:06d} intentando matricular curso {curso}')
             if cupos[curso] > 0:
                 cupos[curso] = cupos[curso] - 1
