@@ -1,4 +1,4 @@
-from multiprocessing import Process, Array
+from multiprocessing import Process, Array, Lock
 from random import randint
 from time import sleep
 
@@ -34,11 +34,13 @@ def simulador_matricula():
 
     num_estudiantes = 40
 
+    Locks = [lock() for _ in range(num_cursos)]
+
     procesos_estudiantes = []
     for estudiante in range(0, num_estudiantes):
         procesos_estudiantes.append(
             Process(target=matricular,
-                    args=(estudiante, num_cursos, cupos_compartido, matriculados_compartido, en_espera_compartido))
+                    args=(estudiante, num_cursos, cupos_compartido, matriculados_compartido, en_espera_compartido, Locks))
         )
 
     for p in procesos_estudiantes:
@@ -63,18 +65,24 @@ def simulador_matricula():
     return reporte
 
 
-def matricular(estudiante, num_cursos, cupos, matriculados, en_espera):
+def matricular(estudiante, num_cursos, cupos, matriculados, en_espera, locks):
 
     cursos_a_matricular = list(range(num_cursos))
     for curso in cursos_a_matricular:
-        # print(f'Estudiante carnet {estudiante:06d} intentando matricular curso {curso}')
-        if cupos[curso] > 0:
-            cupos[curso] = cupos[curso] - 1
-            # simular tiempo de operación del sistema
-            sleep(randint(1, 3))
-            matriculados[curso] = matriculados[curso] + 1
-        else:
-            en_espera[curso] = en_espera[curso] + 1
+        with locks:
+            # print(f'Estudiante carnet {estudiante:06d} intentando matricular curso {curso}')
+            if cupos[curso] > 0:
+                cupos[curso] = cupos[curso] - 1
+                # simular tiempo de operación del sistema
+                sleep(randint(1, 3))
+                matriculados[curso] = matriculados[curso] + 1
+            else:
+                en_espera[curso] = en_espera[curso] + 1
 
 
-#esto es una prueba de texto
+####
+# Únicamente agregar código nuevo, no puede eliminar código existente.
+# Se pueden modificar las funciones existentes agregando parámetros e instrucciones.
+# A excepción del problema de consistencia, no cambiar la funcionalidad de la simulación.
+# El tiempo de ejecución de la simulación no debe superar los 120 segundos.
+###
